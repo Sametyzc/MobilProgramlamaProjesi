@@ -1,76 +1,164 @@
-import React, { Component, useState } from "react";
-import { StyleSheet, View, Button, Text } from "react-native";
-import { getBooksList } from "./utils/BookAPI.js";
+import React from "react";
+import { Alert, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  Calendar,
+  CalendarList,
+  Agenda,
+  LocaleConfig,
+} from "react-native-calendars";
+import Constants from "expo-constants";
+import * as SQLite from "expo-sqlite";
 
-const Cat = () => {
-  const [number, setNumber] = useState(true);
+LocaleConfig.locales["tr"] = {
+  monthNames: [
+    "Ocak",
+    "Şubat",
+    "Mart",
+    "Nisan",
+    "Mayıs",
+    "Haziran",
+    "Temmuz",
+    "Ağustos",
+    "Eylül",
+    "Ekim",
+    "Kasım",
+    "Aralık",
+  ],
+  monthNamesShort: [
+    "Ocak",
+    "Şubat",
+    "Mart",
+    "Nisan",
+    "Mayıs",
+    "Haziran",
+    "Temmuz",
+    "Ağustos",
+    "Eylül",
+    "Ekim",
+    "Kasım",
+    "Aralık",
+  ],
+  dayNames: [
+    "Pazartesi",
+    "Salı",
+    "Çarşamba",
+    "Perşembe",
+    "Cuma",
+    "Cumartesi",
+    "Pazar",
+  ],
+  dayNamesShort: ["Pzt", "Salı", "Çrş", "Prş", "Cuma", "Cts", "Pazar"],
+  today: "Bugün",
+};
 
-  return (
-    <View>
-      <Text>{number}</Text>
-      <Button
-        onPress={() => {
-          setNumber(getBooksList("tavşan"));
-        }}
-        title="Bana bas"
+LocaleConfig.defaultLocale = "tr";
+
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      items: {},
+    };
+  }
+
+  render() {
+    return (
+      <Agenda
+        items={this.state.items}
+        loadItemsForMonth={this.loadItems.bind(this)}
+        selected={"2017-05-16"}
+        renderItem={this.renderItem.bind(this)}
+        renderEmptyDate={this.renderEmptyDate.bind(this)}
+        rowHasChanged={this.rowHasChanged.bind(this)}
+        // markingType={'period'}
+        // markedDates={{
+        //    '2017-05-08': {textColor: '#43515c'},
+        //    '2017-05-09': {textColor: '#43515c'},
+        //    '2017-05-14': {startingDay: true, endingDay: true, color: 'blue'},
+        //    '2017-05-21': {startingDay: true, color: 'blue'},
+        //    '2017-05-22': {endingDay: true, color: 'gray'},
+        //    '2017-05-24': {startingDay: true, color: 'gray'},
+        //    '2017-05-25': {color: 'gray'},
+        //    '2017-05-26': {endingDay: true, color: 'gray'}}}
+        // monthFormat={'yyyy'}
+        // theme={{calendarBackground: 'red', agendaKnobColor: 'green'}}
+        //renderDay={(day, item) => (<Text>{day ? day.day: 'item'}</Text>)}
+        // hideExtraDays={false}
       />
-    </View>
-  );
-};
+    );
+  }
 
-const Cafe = () => {
-  return (
-    <View style={styles.container}>
-      <Text>{getBooksList("tavşan")}</Text>
-    </View>
-  );
-};
+  loadItems(day) {
+    setTimeout(() => {
+      for (let i = -15; i < 85; i++) {
+        const time = day.timestamp + i * 24 * 60 * 60 * 1000;
+        const strTime = this.timeToString(time);
+        if (!this.state.items[strTime]) {
+          this.state.items[strTime] = [];
+          const numItems = Math.floor(Math.random() * 3 + 1);
+          for (let j = 0; j < numItems; j++) {
+            this.state.items[strTime].push({
+              name: "Item for " + strTime + " #" + j,
+              height: Math.max(50, Math.floor(Math.random() * 150)),
+              done: Math.round(Math.random()),
+            });
+          }
+        }
+      }
+      const newItems = {};
+      Object.keys(this.state.items).forEach((key) => {
+        newItems[key] = this.state.items[key];
+      });
+      this.setState({
+        items: newItems,
+      });
+    }, 1000);
+  }
 
-export default Cafe;
+  renderItem(item) {
+    console.log(item.done);
+    return (
+      <TouchableOpacity
+        style={[styles.item, { height: item.height }]}
+        onPress={() => Alert.alert(item.name)}
+      >
+        
+        <Text style={{ textDecorationLine: item.done ? "line-through" : "none" }} >{item.name}</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  renderEmptyDate() {
+    return (
+      <View style={styles.emptyDate}>
+        <Text>This is empty date!</Text>
+      </View>
+    );
+  }
+
+  rowHasChanged(r1, r2) {
+    return r1.name !== r2.name;
+  }
+
+  timeToString(time) {
+    const date = new Date(time);
+    return date.toISOString().split("T")[0];
+  }
+}
+
 const styles = StyleSheet.create({
-  container: {
+  item: {
+    backgroundColor: "white",
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+    marginTop: 17,
   },
-  detailedContainer: {
-    marginVertical: "50%",
+  emptyDate: {
+    height: 15,
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    color: "black",
-  },
-  imageContainer: {
-    flex: 1,
-  },
-  image: {
-    flex: 1,
-    width: null,
-    height: null,
-    resizeMode: "cover",
-  },
-  textStyle: {
-    textAlign: "center",
-    fontFamily: Platform.OS === "ios" ? "AvenirNext-Regular" : "Roboto",
-  },
-  textInput: {
-    backgroundColor: "gray",
-    color: "white",
-    height: 40,
-    width: 300,
-    marginTop: 20,
-    marginHorizontal: 20,
-    paddingHorizontal: 10,
-    alignSelf: "center",
-  },
-  largeText: {
-    fontSize: 44,
-  },
-  mediumText: {
-    fontSize: 20,
-  },
-  smallText: {
-    fontSize: 12,
+    paddingTop: 30,
   },
 });
