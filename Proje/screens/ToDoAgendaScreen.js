@@ -10,6 +10,7 @@ import {
 import { Agenda, LocaleConfig } from "react-native-calendars";
 import Constants from "expo-constants";
 import * as SQLite from "expo-sqlite";
+import parseDate from "../utils/util";
 
 
 //Ajanda da gösterilecek olan ay ve gün isimleri atandı.
@@ -64,12 +65,7 @@ export default class ToDoAgendaScreen extends React.Component {
   constructor(props) {
     super(props);
     var dateNow = new Date();
-    var dateNowAsString =
-      dateNow.getFullYear() +
-      "-" +
-      (dateNow.getMonth() + 1) +
-      "-" +
-      dateNow.getDate();
+    var dateNowAsString = parseDate(dateNow);
     this.state = {
       dateNow: dateNow,
       dateNowAsString: dateNowAsString,
