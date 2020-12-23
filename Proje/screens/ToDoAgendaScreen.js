@@ -1,17 +1,10 @@
 import React from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  TextInput,
-} from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { Agenda, LocaleConfig } from "react-native-calendars";
-import Constants from "expo-constants";
-import * as SQLite from "expo-sqlite";
+import { Button } from "react-native-elements";
 import parseDate from "../utils/util";
-
+import { GetDates, UpdateItem, GetDB } from "../utils/DBConnection";
 
 //Ajanda da gösterilecek olan ay ve gün isimleri atandı.
 LocaleConfig.locales["tr"] = {
@@ -67,41 +60,37 @@ export default class ToDoAgendaScreen extends React.Component {
     var dateNow = new Date();
     var dateNowAsString = parseDate(dateNow);
     this.state = {
+      refresh: true,
       dateNow: dateNow,
       dateNowAsString: dateNowAsString,
       items: {},
+      markedDates: {},
     };
   }
-
+  update() {
+    this.setState({ refresh: true });
+    GetDates()
+      .then((data) => this.setItems(data))
+      .catch((error) => {
+        console.error(error);
+      });
+    this.setState({ refresh: false });
+  }
   render() {
+    if (this.props.update) {
+      this.update();
+      this.props.update = false;
+    }
     return (
       <Agenda
-        items={{
-          "2020-12-14": [
-            { name: "ekmek al" },
-            { name: "2020-12-14 item 2" },
-            { name: "2020-12-14 item 3" },
-          ],
-          "2020-12-15": [{ name: "item 2 - any js object", height: 80 }],
-          "2020-12-16": [],
-          "2020-12-17": [
-            { name: "item 3 - any js object" },
-            { name: "any js object" },
-          ],
-        }}
-        // Callback that gets called when items for a certain month should be loaded (month became visible)
-        loadItemsForMonth={this.loadItems.bind(this)}
+        items={this.state.items}
         renderDay={this.renderDay.bind(this)}
         renderItem={this.renderItem.bind(this)}
-        renderEmptyDate={this.renderEmptyDate.bind(this)}
         rowHasChanged={this.rowHasChanged.bind(this)}
         markingType={"multi-dot"}
-        markedDates={{
-          "2020-12-14": {
-            dots: [vacation, massage, workout],
-          },
-          "2020-12-15": { dots: [massage, workout]},
-        }}
+        onRefresh={this.update.bind(this)}
+        refreshing={this.state.refresh}
+        markedDates={this.state.markedDates}
         theme={{
           //CalendarList için tema
           textSectionTitleColor: "#b6c1cd",
@@ -121,40 +110,38 @@ export default class ToDoAgendaScreen extends React.Component {
           //Agenda için tema
           agendaKnobColor: "#66b7ff",
         }}
-        //renderDay={(day, item) => (<Text>{day ? day.day: 'item'}</Text>)}
-        //hideExtraDays={false}
       />
     );
   }
 
-  loadItems(day) {
-    setTimeout(() => {
-      for (let i = -15; i < 85; i++) {
-        const time = day.timestamp + i * 24 * 60 * 60 * 1000;
-        const strTime = this.timeToString(time);
-        if (!this.state.items[strTime]) {
-          this.state.items[strTime] = [];
-          const numItems = Math.floor(Math.random() * 3 + 1);
-          for (let j = 0; j < numItems; j++) {
-            this.state.items[strTime].push({
-              name: "Item for " + strTime + " #" + j,
-              height: Math.max(50, Math.floor(Math.random() * 150)),
-              done: Math.round(Math.random()),
-            });
-          }
-        }
+  setItems(data) {
+    let items = {};
+    let markedDates = {};
+    data.map((item) => {
+      if (typeof items[item.date] === "undefined") {
+        items[item.date] = [];
       }
-      const newItems = {};
-      Object.keys(this.state.items).forEach((key) => {
-        newItems[key] = this.state.items[key];
+      items[item.date].push({
+        name: item.text,
+        color: item.color,
+        done: item.done,
+        id: item.id,
       });
-      this.setState({
-        items: newItems,
-      });
-    }, 1000);
+      if (item.color !== "") {
+        if (typeof markedDates[item.date] === "undefined") {
+          markedDates[item.date] = { dots: [] };
+        }
+        markedDates[item.date].dots.push({
+          key: item.id + "",
+          color: item.color,
+        });
+      }
+    });
+    this.setState({ items: items });
+    this.setState({ markedDates: markedDates });
   }
 
-  renderDay(day, item) {
+  renderDay(day) {
     if (typeof day === "undefined") {
       return;
     }
@@ -165,8 +152,9 @@ export default class ToDoAgendaScreen extends React.Component {
         style={{
           flex: 1,
           flexDirection: "column",
+          alignItems: "center",
           position: "absolute",
-          margin: 15,
+          margin: 10,
         }}
       >
         <Text
@@ -199,19 +187,46 @@ export default class ToDoAgendaScreen extends React.Component {
 
   renderItem(item) {
     return (
-      <View style={[styles.item]} onPress={() => Alert.alert(item.name)}>
+      <View style={[styles.item]}>
+        <View
+          style={[
+            {
+              backgroundColor: item.color,
+            },
+            styles.itemDot,
+          ]}
+        />
         <Text
-          style={{ textDecorationLine: item.done ? "line-through" : "none" }}
+          style={[
+            { textDecorationLine: item.done == 1 ? "line-through" : "none" },
+            styles.itemText,
+          ]}
         >
           {item.name}
         </Text>
-      </View>
-    );
-  }
-  renderEmptyDate() {
-    return (
-      <View style={styles.item}>
-        <Text>This is empty date!</Text>
+        <View style={styles.buttonContainer}>
+          {item.done == 1 ? (
+            <Button
+              key={item.id}
+              icon={<Icon name="times-circle" size={25} color="red" />}
+              type="clear"
+              buttonStyle={{ margin: 2, padding: 0 }}
+              onPress={() => {
+                this.onDeleteButtonPress(item.id);
+              }}
+            />
+          ) : (
+            <Button
+              key={item.id}
+              icon={<Icon name="check-circle" size={25} color="green" />}
+              type="clear"
+              buttonStyle={{ margin: 2, padding: 0 }}
+              onPress={() => {
+                this.onDoneButtonPress(item.id);
+              }}
+            />
+          )}
+        </View>
       </View>
     );
   }
@@ -224,18 +239,74 @@ export default class ToDoAgendaScreen extends React.Component {
     const date = new Date(time);
     return date.toISOString().split("T")[0];
   }
+
+  onDoneButtonPress(id) {
+    const db = GetDB();
+    db.transaction((tx) => {
+      tx.executeSql(
+        "UPDATE items SET done = 1 WHERE id = ?;",
+        [id],
+        (txObj, resultSet) => {
+          if (resultSet.rowsAffected > 0) {
+            this.update();
+          }
+        },
+        (txObj, error) => {
+          console.log("[update] error: ", error);
+        }
+      );
+    });
+  }
+
+  onDeleteButtonPress(id) {
+    const db = GetDB();
+    db.transaction((tx) => {
+      tx.executeSql(
+        "DELETE FROM items WHERE id = ? ",
+        [id],
+        (txObj, resultSet) => {
+          if (resultSet.rowsAffected > 0) {
+            this.update();
+          }
+        },
+        (txObj, error) => {
+          console.log("[delete] error: ", error);
+        }
+      );
+    });
+  }
 }
 
 const styles = StyleSheet.create({
   item: {
     backgroundColor: "white",
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     padding: 10,
     marginTop: 5,
     marginBottom: 5,
     marginLeft: 50,
+    marginRight: 10,
+  },
+  itemDot: {
+    borderRadius: 10,
+    width: 15,
+    height: 15,
+    margin: 2,
+  },
+  itemText: {
+    marginLeft: 5,
+    fontSize: 15,
   },
   dayName: {
     fontSize: 12,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    marginLeft: "auto",
+  },
+  doneButton: {
+    backgroundColor: "green",
   },
 });

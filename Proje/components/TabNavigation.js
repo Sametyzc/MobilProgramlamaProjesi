@@ -1,28 +1,39 @@
-import * as React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import ToDoAgendaScreen from '../screens/ToDoAgendaScreen';
-import AddTodoItemScreen from '../screens/AddTodoItemScreen';
+import ToDoAgendaScreen from "../screens/ToDoAgendaScreen";
+import AddTodoItemScreen from "../screens/AddTodoItemScreen";
 
 export default function TabNavigation() {
+  const [updateHandle, setUpdate] = useState(true);
+
+  const handleClick = () => {
+    console.log("update handler");
+    setUpdate(true);
+  };
+
   const Tab = createBottomTabNavigator();
   return (
     <Tab.Navigator
       initialRouteName="Agenda"
       tabBarOptions={{
-        activeTintColor: 'blue',
-        inactiveTintColor: 'gray',
+        activeTintColor: "blue",
+        inactiveTintColor: "gray",
         labelStyle: { fontSize: 14 },
       }}
     >
       <Tab.Screen
         name="Agenda"
-        component={ToDoAgendaScreen}
+        children={() => {
+          let bool = updateHandle;
+          setUpdate(false);
+          return <ToDoAgendaScreen update={bool}/>
+        }}
         options={{
-          tabBarLabel: 'Agenda',
+          tabBarLabel: "Agenda",
           tabBarIcon: ({ focused, size }) => {
-            const IcoColor = focused ? 'blue' : 'gray';
+            const IcoColor = focused ? "blue" : "gray";
             // You can return any component that you like here!
             return (
               <MaterialCommunityIcons
@@ -36,13 +47,11 @@ export default function TabNavigation() {
       />
       <Tab.Screen
         name="AddToDo"
-        component={AddTodoItemScreen}
+        children={() => <AddTodoItemScreen updateHandler={handleClick} />}
         options={{
-          tabBarLabel: 'Add To Do',
-          // eslint-disable-next-line react/prop-types
+          tabBarLabel: "Add To Do",
           tabBarIcon: ({ focused, size }) => {
-            const IcoColor = focused ? 'blue' : 'gray';
-            // You can return any component that you like here!
+            const IcoColor = focused ? "blue" : "gray";
             return (
               <MaterialCommunityIcons
                 name="marker-check"

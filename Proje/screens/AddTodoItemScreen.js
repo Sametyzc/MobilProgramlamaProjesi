@@ -11,7 +11,7 @@ import {
   Keyboard,
   Platform,
 } from "react-native";
-import { Card, ListItem, Button, Icon } from "react-native-elements";
+import { Card, Overlay, Button, Icon } from "react-native-elements";
 import ColorPalette from "react-native-color-palette";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { InsertItem } from "../utils/DBConnection";
@@ -29,6 +29,7 @@ export default class AddTodoItemScreen extends React.Component {
       selectedDate: new Date(),
       typedText: "",
       loading: false,
+      showOverlay: false,
       errorMessage: "",
     };
   }
@@ -54,6 +55,20 @@ export default class AddTodoItemScreen extends React.Component {
     return <Text style={{ color: "red" }}>{this.state.errorMessage}</Text>;
   }
 
+  refresh() {
+    this.setState({
+      currentDate: new Date(),
+      iconColor: "black",
+      iconName: "clear",
+      selectedColor: "#fff",
+      selectedDate: new Date(),
+      typedText: "",
+      loading: false,
+      showOverlay: false,
+      errorMessage: "",
+    });
+  }
+
   render() {
     return (
       <KeyboardAvoidingView
@@ -65,6 +80,7 @@ export default class AddTodoItemScreen extends React.Component {
           <Card.Divider style={styles.headerDivider} />
           <Text style={styles.header}>Enter To Do Item</Text>
           <Input
+            value={this.state.typedText}
             placeholder="Type Name"
             onChangeText={this.inputOnChangeText.bind(this)}
           />
@@ -92,6 +108,7 @@ export default class AddTodoItemScreen extends React.Component {
                 "#9B59B6",
                 "#edf035",
               ]}
+              value={this.state.selectedColor}
               defaultColor={"#fff"}
               title={""}
               icon={
@@ -109,8 +126,26 @@ export default class AddTodoItemScreen extends React.Component {
             {this.renderErrorMessage()}
           </View>
         </Card>
+        <Overlay isVisible={this.state.showOverlay}>
+          <View>
+            <Text>The item succesfully added!</Text>
+            <Button
+              buttonStyle={{ marginTop: 10, backgroundColor: "green" }}
+              title="Ok"
+              onPress={() => {
+                this.setState({ showOverlay: false });
+                this.refresh();
+                this.updateHandler();
+              }}
+            />
+          </View>
+        </Overlay>
       </KeyboardAvoidingView>
     );
+  }
+
+  updateHandler() {
+    this.props.updateHandler();
   }
 
   buttonOnPress() {
@@ -126,6 +161,8 @@ export default class AddTodoItemScreen extends React.Component {
         color: this.state.selectedColor,
       };
       InsertItem(item);
+      this.setState({ loading: false });
+      this.setState({ showOverlay: true });
     }
   }
 
