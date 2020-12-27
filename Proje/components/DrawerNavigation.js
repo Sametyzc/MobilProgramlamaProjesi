@@ -2,36 +2,31 @@ import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import ToDoAgendaScreen from "../screens/ToDoAgendaScreen";
-import AddTodoItemScreen from "../screens/AddTodoItemScreen";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 
-import Home from "../screens/Home";
+import TabNavigation from "./TabNavigation";
+import Settings from "../screens/Settings";
 
-export default function TabNavigation() {
-  const [updateHandle, setUpdate] = useState(true);
+const Drawer = createDrawerNavigator();
 
-  const handleClick = () => {
-    setUpdate(true);
-  };
-
-  const Tab = createBottomTabNavigator();
+export default function DrawerNavigation() {
   return (
-    <Tab.Navigator
+    <Drawer.Navigator
       initialRouteName="Home"
-      tabBarOptions={{
-        activeTintColor: "blue",
-        inactiveTintColor: "gray",
-        labelStyle: { fontSize: 14 },
+      drawerType="slide"
+      drawerPosition="right"
+      drawerStyle={{
+        flex: 1,
+        flexDirection: "column",
       }}
     >
-      <Tab.Screen
+      <Drawer.Screen
         name="Home"
         children={() => {
-          return <Home name={"Samet Yazıcı"} />;
+          return <TabNavigation />;
         }}
         options={{
-          tabBarLabel: "Home",
-          tabBarIcon: ({ focused, size }) => {
+          drawerIcon: ({ focused, size }) => {
             const IcoColor = focused ? "blue" : "gray";
             // You can return any component that you like here!
             return (
@@ -44,21 +39,18 @@ export default function TabNavigation() {
           },
         }}
       />
-      <Tab.Screen
-        name="Agenda"
+      <Drawer.Screen
+        name="Settings"
         children={() => {
-          let bool = updateHandle;
-          setUpdate(false);
-          return <ToDoAgendaScreen update={bool} />;
+          return <Settings />;
         }}
         options={{
-          tabBarLabel: "Agenda",
-          tabBarIcon: ({ focused, size }) => {
+          drawerIcon: ({ focused, size }) => {
             const IcoColor = focused ? "blue" : "gray";
             // You can return any component that you like here!
             return (
               <MaterialCommunityIcons
-                name="calendar"
+                name="settings"
                 size={size}
                 color={IcoColor}
               />
@@ -66,16 +58,20 @@ export default function TabNavigation() {
           },
         }}
       />
-      <Tab.Screen
-        name="AddToDo"
-        children={() => <AddTodoItemScreen updateHandler={handleClick} />}
+
+      <Drawer.Screen
+        name="Logout"
+        children={() => {
+          return <Settings />;
+        }}
         options={{
-          tabBarLabel: "Add To Do",
-          tabBarIcon: ({ focused, size }) => {
+          headerStyle: { position: "absolute", bottom: 0 },
+          drawerIcon: ({ focused, size }) => {
             const IcoColor = focused ? "blue" : "gray";
+            // You can return any component that you like here!
             return (
               <MaterialCommunityIcons
-                name="marker-check"
+                name="logout"
                 size={size}
                 color={IcoColor}
               />
@@ -83,6 +79,6 @@ export default function TabNavigation() {
           },
         }}
       />
-    </Tab.Navigator>
+    </Drawer.Navigator>
   );
 }

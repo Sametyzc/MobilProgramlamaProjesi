@@ -9,7 +9,6 @@ export function CreateTable() {
       "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT, date TEXT, color TEXT, done INT)"
     );
   });
-  console.log("Tablo oluştu!");
 }
 
 export function InsertItem(item) {
@@ -18,7 +17,6 @@ export function InsertItem(item) {
       "INSERT INTO items (text, date, color, done) values (?, ?, ?, ?)",
       [item.text, item.date, item.color, 0],
       (txObj, resultSet) => {
-        console.log("Eklenenin idsi:", resultSet.insertId);
       },
       (txObj, error) => console.log("Error:", error)
     );
@@ -27,14 +25,12 @@ export function InsertItem(item) {
 
 export function UpdateItem(id) {
   
-  console.log("alinan id: ", id);
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql("UPDATE items SET done = 1 WHERE id = ?;",
         [id],
         (txObj, resultSet) => {
           if (resultSet.rowsAffected > 0) {
-            console.log(resultSet);
             resolve(resultSet);
           }
         },
@@ -57,6 +53,23 @@ export async function GetDates() {
       tx.executeSql(
         "SELECT * FROM items",
         null,
+        (txObj, { rows: { _array } }) => {
+          resolve(_array);
+        },
+        (txObj, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+}
+
+export async function GetItemByDate(date) {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT text,done FROM items WHERE date = ?",
+        [date],
         (txObj, { rows: { _array } }) => {
           resolve(_array);
         },

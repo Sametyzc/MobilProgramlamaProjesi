@@ -50,15 +50,12 @@ LocaleConfig.locales["tr"] = {
 };
 LocaleConfig.defaultLocale = "tr";
 
-const vacation = { key: "vacation", color: "red", selectedDotColor: "blue" };
-const massage = { key: "massage", color: "blue", selectedDotColor: "blue" };
-const workout = { key: "workout", color: "green" };
-
 export default class ToDoAgendaScreen extends React.Component {
   constructor(props) {
     super(props);
     var dateNow = new Date();
     var dateNowAsString = parseDate(dateNow);
+
     this.state = {
       refresh: true,
       dateNow: dateNow,
@@ -67,6 +64,7 @@ export default class ToDoAgendaScreen extends React.Component {
       markedDates: {},
     };
   }
+
   update() {
     this.setState({ refresh: true });
     GetDates()
