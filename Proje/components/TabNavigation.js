@@ -27,7 +27,7 @@ export default function TabNavigation() {
       <Tab.Screen
         name="Home"
         children={() => {
-          return <Home name={"Samet Yazıcı"} />;
+          return <Home />;
         }}
         options={{
           tabBarLabel: "Home",

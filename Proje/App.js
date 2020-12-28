@@ -11,11 +11,15 @@ const Stack = createStackNavigator();
 
 const App = () => {
   const [logedin, setLogedin] = useState(false);
-  
+
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-      user ? setLogedin(true) : setLogedin(false);
-    });
+    let isMounted = true;
+    if (isMounted) {
+      firebase.auth().onAuthStateChanged((user) => {
+        user ? setLogedin(true) : setLogedin(false);
+      });
+    }
+    return () => (isMounted = false);
   }, []);
 
   if (logedin) {

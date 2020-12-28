@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Card, Input, Button, Icon } from "react-native-elements";
+import { Card, Input, Button } from "react-native-elements";
 import { Entypo } from "@expo/vector-icons";
 import Fire from "../utils/FireBaseConnection";
 import * as firebase from "firebase";
@@ -16,6 +16,7 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const renderErrorMsg = () => {
     if (errorMsg) {
@@ -27,12 +28,15 @@ const LoginScreen = ({ navigation }) => {
     }
   };
   const handleLogin = () => {
+    setLoading(true);
     const check = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     {
       if (!check.test(email)) {
         setErrorMsg("Invalid email address!");
+        setLoading(false);
       } else if (password.length <= 5) {
         setErrorMsg("Password must be greater than 5!");
+        setLoading(false);
       } else {
         firebase
           .auth()
@@ -40,7 +44,8 @@ const LoginScreen = ({ navigation }) => {
           .then()
           .catch((err) => {
             console.log(err);
-            setState({ errMess: err.message });
+            setErrorMsg(err.message);
+            setLoading(false);
           });
       }
     }
@@ -80,7 +85,7 @@ const LoginScreen = ({ navigation }) => {
             />
             <Input
               style={styles.input}
-              label="password"
+              label="PASSWORD"
               labelStyle={styles.label}
               placeholder="Password"
               leftIcon={<Entypo name="lock" size={20} color="dodgerblue" />}
@@ -94,6 +99,7 @@ const LoginScreen = ({ navigation }) => {
               icon={<Entypo name="login" size={20} color="white" />}
               title="Login  "
               onPress={handleLogin}
+              loading={isLoading}
             />
             <TouchableOpacity
               style={styles.button2}
@@ -105,7 +111,7 @@ const LoginScreen = ({ navigation }) => {
                 If you do not have an account
                 <Text style={{ fontWeight: "500", color: "dodgerblue" }}>
                   {" "}
-                  register here.
+                  press here.
                 </Text>
               </Text>
             </TouchableOpacity>

@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import firebase from "firebase";
 
 export default class Home extends React.Component {
   constructor(props) {
@@ -14,7 +11,9 @@ export default class Home extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>Hoşgeldin {" " + this.props.name}</Text>
+        <Text style={styles.header}>
+          Hoşgeldin {" " + firebase.auth().currentUser.email}
+        </Text>
       </View>
     );
   }

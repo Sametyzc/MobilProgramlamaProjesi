@@ -19,6 +19,7 @@ export default function DrawerNavigation() {
         flex: 1,
         flexDirection: "column",
       }}
+      
     >
       <Drawer.Screen
         name="Home"
@@ -51,27 +52,6 @@ export default function DrawerNavigation() {
             return (
               <MaterialCommunityIcons
                 name="settings"
-                size={size}
-                color={IcoColor}
-              />
-            );
-          },
-        }}
-      />
-
-      <Drawer.Screen
-        name="Logout"
-        children={() => {
-          return <Settings />;
-        }}
-        options={{
-          headerStyle: { position: "absolute", bottom: 0 },
-          drawerIcon: ({ focused, size }) => {
-            const IcoColor = focused ? "blue" : "gray";
-            // You can return any component that you like here!
-            return (
-              <MaterialCommunityIcons
-                name="logout"
                 size={size}
                 color={IcoColor}
               />

@@ -14,6 +14,8 @@ import {
 import { Card, Input, Button, Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 import { Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 //import Fire from "../../../Fire";
 import * as firebase from "firebase";
 import { SafeAreaView } from "react-native";
@@ -21,7 +23,9 @@ import { SafeAreaView } from "react-native";
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const renderErrorMsg = () => {
     if (errorMsg) {
@@ -32,20 +36,32 @@ const RegisterScreen = ({ navigation }) => {
       );
     }
   };
-  const handleLogin = () => {
+
+  const handleRegister = () => {
+    setLoading(true);
     const check = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     {
       if (!check.test(email)) {
         setErrorMsg("Invalid email address!");
+        setLoading(false);
       } else if (password.length <= 5) {
         setErrorMsg("Password must be greater than 5!");
+        setLoading(false);
+      } else if (password !== confirmPassword) {
+        setErrorMsg("Passwrods are not same!");
+        setLoading(false);
       } else {
         firebase
           .auth()
-          .signInWithEmailAndPassword(email, password)
+          .createUserWithEmailAndPassword(email, password)
+          .then(() => {
+            setLoading(false);
+            navigation.navigate("Login");
+          })
           .catch((err) => {
             console.log(err);
-            setState({ errMess: err.message });
+            setErrorMsg(err.message);
+            setLoading(false);
           });
       }
     }
@@ -53,7 +69,7 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <ScrollView>
-        <View
+      <View
         style={{
           alignItems: "center",
           margin: 0,
@@ -62,9 +78,9 @@ const RegisterScreen = ({ navigation }) => {
           backgroundColor: "white",
         }}
       >
-        <Text
-        style={{color:"black",fontWeight:"600",fontSize:16}}
-        >Register Screen</Text>
+        <Text style={{ color: "black", fontWeight: "600", fontSize: 16 }}>
+          Register Screen
+        </Text>
       </View>
       <SafeAreaView>
         <Card
@@ -92,13 +108,29 @@ const RegisterScreen = ({ navigation }) => {
               onChangeText={(text) => setPassword(text)}
               secureTextEntry
             />
+            <Input
+              style={styles.input}
+              label="confirm password"
+              labelStyle={styles.label}
+              placeholder="Password Again"
+              leftIcon={
+                <MaterialCommunityIcons
+                  name="shield-check"
+                  size={20}
+                  color="dodgerblue"
+                />
+              }
+              onChangeText={(text) => setConfirmPassword(text)}
+              secureTextEntry
+            />
             {renderErrorMsg()}
             <Button
               style={{ padding: 15, paddingBottom: 0 }}
               iconRight
-              icon={<Entypo name="login" size={20} color="white" />}
-              title="Login  "
-              onPress={handleLogin}
+              icon={<AntDesign name="enter" size={20} color="white" />}
+              title="Ok  "
+              onPress={handleRegister}
+              loading={isLoading}
             />
             <TouchableOpacity
               style={styles.button2}
@@ -107,10 +139,10 @@ const RegisterScreen = ({ navigation }) => {
               }}
             >
               <Text style={styles.textButton2}>
-                If you do not have an account
+                If you already have an account
                 <Text style={{ fontWeight: "500", color: "dodgerblue" }}>
                   {" "}
-                  register here.
+                  press here.
                 </Text>
               </Text>
             </TouchableOpacity>
