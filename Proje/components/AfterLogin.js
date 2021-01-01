@@ -3,10 +3,9 @@ import * as Permissions from "expo-permissions";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { NavigationContainer } from "@react-navigation/native";
-import { CreateTable, GetItemByDate } from "./utils/DBConnection";
-import DrawerNavigation from "./components/DrawerNavigation.js";
-import parseDate from "./utils/util";
-import auth from '@react-native-firebase/auth';
+import { CreateTable, GetItemByDate } from "../utils/DBConnection";
+import DrawerNavigation from "./DrawerNavigation.js";
+import parseDate from "../utils/util";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

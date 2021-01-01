@@ -29,7 +29,6 @@ export default function DrawerNavigation() {
         options={{
           drawerIcon: ({ focused, size }) => {
             const IcoColor = focused ? "blue" : "gray";
-            // You can return any component that you like here!
             return (
               <MaterialCommunityIcons
                 name="home"

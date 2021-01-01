@@ -6,6 +6,7 @@ import * as firebase from "firebase";
 import DrawerNavigation from "./components/DrawerNavigation";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
+import AfterLogin from "./components/AfterLogin";
 
 const Stack = createStackNavigator();
 
@@ -23,18 +24,13 @@ const App = () => {
   }, []);
 
   if (logedin) {
-    return (
-      <NavigationContainer>
-        <DrawerNavigation />
-      </NavigationContainer>
-    );
+    return <AfterLogin />;
   }
   return (
     <NavigationContainer>
       <Stack.Navigator headerMode="none" initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="DrawerNavigation" component={DrawerNavigation} />
       </Stack.Navigator>
     </NavigationContainer>
   );
