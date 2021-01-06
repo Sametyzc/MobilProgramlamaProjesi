@@ -15,11 +15,6 @@ export default function DrawerNavigation() {
       initialRouteName="Home"
       drawerType="slide"
       drawerPosition="right"
-      drawerStyle={{
-        flex: 1,
-        flexDirection: "column",
-      }}
-      
     >
       <Drawer.Screen
         name="Home"
